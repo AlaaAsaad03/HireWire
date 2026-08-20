@@ -3,6 +3,7 @@ import apiClient from './axios';
 
 
 export const applicationsApi = {
+
     getAll: async (): Promise<Application[]> => {
         const response = await apiClient.get('/applications');
         return response.data;
@@ -31,4 +32,5 @@ export const applicationsApi = {
         const response = await apiClient.get('/applications/stats');
         return response.data;
     },
+
 };

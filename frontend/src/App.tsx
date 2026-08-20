@@ -1,121 +1,166 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { useAuthStore } from "./store/authStore";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Skills from "./pages/Skills";
+import Dashboard from "./pages/Dashboard";
+import Contacts from "./pages/Contacts";
+import ApplicationDetails from "./pages/ApplicationDetails";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
+import { ThemeProvider } from "./context/ThemeContext";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import AdvancedAnalytics from "./pages/AdvancedAnalytics";
+import AppLayout from "./components/AppLayout";
 
-function App() {
-  const [count, setCount] = useState(0)
+import Landing from "./pages/Landing";
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+// Protected Route Component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
+  const navigate = useNavigate();
 
-      <div className="ticks"></div>
+  useKeyboardShortcuts([
+    {
+      key: "d",
+      alt: true,
+      callback: () => navigate("/dashboard"),
+      description: "Go to dashboard",
+    },
+    {
+      key: "c",
+      alt: true,
+      callback: () => navigate("/contacts"),
+      description: "Go to contacts",
+    },
+    {
+      key: "a",
+      alt: true,
+      callback: () => navigate("/analytics"),
+      description: "Go to analytics",
+    },
+    {
+      key: "s",
+      alt: true,
+      callback: () => navigate("/settings"),
+      description: "Go to settings",
+    },
+  ]);
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  return <AppLayout>{children}</AppLayout>;
 }
 
-export default App
+// Public Route Component (redirect to dashboard if already logged in)
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <Routes>
+        {/* Default Route */}
+        <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
+
+        {/* Public Routes */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contacts"
+          element={
+            <ProtectedRoute>
+              <Contacts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/applications/:id"
+          element={
+            <ProtectedRoute>
+              <ApplicationDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/skills"
+          element={
+            <ProtectedRoute>
+              <Skills />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/advanced-analytics"
+          element={
+            <ProtectedRoute>
+              <AdvancedAnalytics />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 404 - Catch all */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </ThemeProvider>
+  );
+}
+
+export default App;
