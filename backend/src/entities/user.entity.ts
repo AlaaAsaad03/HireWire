@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Application } from './application.entity';
+import { Contact } from './contact.entity';
 
 @Entity('users')
 export class User {
@@ -18,6 +19,9 @@ export class User {
     @Column()
     lastName: string;
 
+    @Column('simple-array', { default: '[]' })
+    skills: string[];
+
     @CreateDateColumn()
     createdAt: Date;
 
@@ -26,4 +30,5 @@ export class User {
 
     @OneToMany(() => Application, (application) => application.user)
     applications: Application[];
+
 }

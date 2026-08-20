@@ -1,5 +1,6 @@
 import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { ApplicationStatus } from "../../entities/application.entity";
+import { Type } from "class-transformer";
 
 export class CreateApplicationDto {
 
@@ -27,6 +28,7 @@ export class CreateApplicationDto {
     @IsOptional()
     location?: string;
 
+    @Type(() => Number)
     @IsNumber()
     @IsOptional()
     salary?: number;
@@ -41,7 +43,7 @@ export class CreateApplicationDto {
 
     @IsDateString()
     @IsOptional()
-    interviewDate?: string;
+    interviewDate?: string | null;
 
     @IsString()
     @IsOptional()

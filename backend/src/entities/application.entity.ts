@@ -1,6 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { User } from './user.entity';
 import { Contact } from './contact.entity';
+import { Activity } from './activity.entity';
+import { Reminder } from './reminder.entity';
+import { Tag } from './tag.entity';
 
 export enum ApplicationStatus {
     APPLIED = 'applied',
@@ -71,4 +74,14 @@ export class Application {
 
     @OneToMany(() => Contact, (contact) => contact.application)
     contacts: Contact[];
+
+    @OneToMany(() => Activity, (activity) => activity.application)
+    activities: Activity[];
+
+    @OneToMany(() => Reminder, (reminder) => reminder.application)
+    reminders: Reminder[];
+
+    @ManyToMany(() => Tag, (tag) => tag.applications)
+    @JoinTable()
+    tags: Tag[];
 }
