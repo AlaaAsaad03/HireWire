@@ -6,9 +6,14 @@ import { ConfigModule } from '@nestjs/config/dist/config.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
+  // Enable CORS for both local dev and production
+  const allowedOrigins = [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean);
+
   app.enableCors({
-    origin: 'http://localhost:5173', // Vite default port
+    origin: allowedOrigins,
     credentials: true,
   });
 
@@ -19,7 +24,8 @@ async function bootstrap() {
   // Enable global validation
   app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen(3000);
-  console.log('🚀 Backend running on http://localhost:3000');
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`🚀 Backend running on port ${port}`);
 }
 bootstrap();

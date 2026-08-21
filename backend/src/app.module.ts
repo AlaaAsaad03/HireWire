@@ -35,7 +35,10 @@ import { Tag } from './entities/tag.entity';
         database: configService.get('DB_DATABASE'),
         entities: [User, Application, Contact, Activity, Reminder, Tag],
         synchronize: true,
-        logging: true,
+        logging: configService.get('NODE_ENV') !== 'production',
+        ssl: configService.get('DB_SSL') === 'true'
+          ? { rejectUnauthorized: false }
+          : false,
       }),
       inject: [ConfigService],
     }),
