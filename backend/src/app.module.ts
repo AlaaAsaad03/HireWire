@@ -26,20 +26,34 @@ import { Tag } from './entities/tag.entity';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: configService.get('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE'),
-        entities: [User, Application, Contact, Activity, Reminder, Tag],
-        synchronize: true,
-        logging: configService.get('NODE_ENV') !== 'production',
-        ssl: configService.get('DB_SSL') === 'true'
-          ? { rejectUnauthorized: false }
-          : false,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const dbUrl = configService.get<string>('DATABASE_URL') || configService.get<string>('INTERNAL_DATABASE_URL');
+        const isProd = process.env.NODE_ENV === 'production' || !!dbUrl || configService.get<string>('DB_SSL') === 'true';
+
+        if (dbUrl) {
+          return {
+            type: 'postgres',
+            url: dbUrl,
+            entities: [User, Application, Contact, Activity, Reminder, Tag],
+            synchronize: true,
+            logging: !isProd,
+            ssl: isProd ? { rejectUnauthorized: false } : false,
+          };
+        }
+
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DB_HOST', 'localhost'),
+          port: parseInt(configService.get<string>('DB_PORT', '5432'), 10),
+          username: configService.get<string>('DB_USERNAME', 'postgres'),
+          password: configService.get<string>('DB_PASSWORD', 'postgres'),
+          database: configService.get<string>('DB_DATABASE', 'hirewire'),
+          entities: [User, Application, Contact, Activity, Reminder, Tag],
+          synchronize: true,
+          logging: !isProd,
+          ssl: isProd ? { rejectUnauthorized: false } : false,
+        };
+      },
       inject: [ConfigService],
     }),
     AuthModule,
