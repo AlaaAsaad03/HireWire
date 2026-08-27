@@ -16,7 +16,8 @@ export class AuthService {
   ) { }
 
   async register(registerDto: RegisterDto) {
-    const { email, password, firstName, lastName } = registerDto;
+    const email = registerDto.email.toLowerCase().trim();
+    const { password, firstName, lastName } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({ where: { email } });
@@ -53,7 +54,8 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const { email, password } = loginDto;
+    const email = loginDto.email.toLowerCase().trim();
+    const { password } = loginDto;
 
     // Find user
     const user = await this.userRepository.findOne({ where: { email } });
